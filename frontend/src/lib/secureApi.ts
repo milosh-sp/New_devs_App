@@ -11,7 +11,6 @@
 
 import { supabase } from './supabase';
 import { sessionManager } from '../utils/sessionManager';
-import { withRetry, handleApiError, classifyError } from '../utils/apiErrorHandler';
 
 // Get backend URL with fallback for misconfigured production environments
 const getBackendUrl = () => {
@@ -264,7 +263,7 @@ export class SecureAPIClient {
     let cleared = 0;
     const keysToDelete: string[] = [];
 
-    for (const [key, value] of this.requestCache.entries()) {
+    for (const [key,] of this.requestCache.entries()) {
       if (key.includes(endpointPattern)) {
         keysToDelete.push(key);
         cleared++;
@@ -277,7 +276,7 @@ export class SecureAPIClient {
 
     // Also clear pending requests
     const pendingKeysToDelete: string[] = [];
-    for (const [key, promise] of this.pendingRequests.entries()) {
+    for (const [key, ] of this.pendingRequests.entries()) {
       if (key.includes(endpointPattern)) {
         pendingKeysToDelete.push(key);
       }
@@ -1450,22 +1449,19 @@ export class SecureAPIClient {
 
   // ============= DASHBOARD API =============
   /**
-   * Get dashboard summary with optional simulation header
+   * Get dashboard summary
    */
-  async getDashboardSummary(propertyId: string, options?: { simulatedTenant?: string, timestamp?: number }) {
+  async getDashboardSummary(propertyId: string, options?: { timestamp?: number }) {
     const queryParams = new URLSearchParams({ property_id: propertyId });
     if (options?.timestamp) {
       queryParams.append('_t', options.timestamp.toString());
     }
 
-    const requestOptions: RequestInit = {};
-    if (options?.simulatedTenant) {
-      requestOptions.headers = {
-        'X-Simulated-Tenant': options.simulatedTenant
-      };
-    }
+    return this.request<any>(`/api/v1/dashboard/summary?${queryParams}`);
+  }
 
-    return this.request<any>(`/api/v1/dashboard/summary?${queryParams}`, requestOptions);
+  async getDashboardProperties() {
+    return this.request<{ id: string; name: string }[]>('/api/v1/dashboard/properties');
   }
 
   async uploadCompanyLogo(logo_url: string) {
