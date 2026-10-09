@@ -25,7 +25,7 @@ The development lead is tied up with another critical project, so you've been as
 ### Environment Setup
 ```bash
 # Start the development environment
-docker-compose up --build
+docker compose up --build
 
 # Access the application
 # Frontend: http://localhost:3000  
